@@ -1,0 +1,47 @@
+{
+  "best_model": "Gradient Boosting",
+  "n_train": 734,
+  "n_test": 184,
+  "models": {
+    "Gradient Boosting": {
+      "cv_accuracy": 0.8583,
+      "accuracy": 0.8696,
+      "precision": 0.89,
+      "recall": 0.8725,
+      "f1": 0.8812,
+      "roc_auc": 0.9144
+    },
+    "Support Vector Machine": {
+      "cv_accuracy": 0.8583,
+      "accuracy": 0.875,
+      "precision": 0.8624,
+      "recall": 0.9216,
+      "f1": 0.891,
+      "roc_auc": 0.9421
+    },
+    "Random Forest": {
+      "cv_accuracy": 0.8556,
+      "accuracy": 0.8913,
+      "precision": 0.8868,
+      "recall": 0.9216,
+      "f1": 0.9038,
+      "roc_auc": 0.9308
+    },
+    "K-Nearest Neighbors": {
+      "cv_accuracy": 0.8502,
+      "accuracy": 0.8587,
+      "precision": 0.88,
+      "recall": 0.8627,
+      "f1": 0.8713,
+      "roc_auc": 0.9308
+    },
+    "Logistic Regression": {
+      "cv_accuracy": 0.8474,
+      "accuracy": 0.8859,
+      "precision": 0.8857,
+      "recall": 0.9118,
+      "f1": 0.8986,
+      "roc_auc": 0.9329
+    }
+  }
+}
