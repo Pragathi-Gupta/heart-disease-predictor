@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heart Disease Predictor</title>
+<style>
+  :root {
+    --bg: #f4f8fb; --card: #fff; --ink: #14303f; --muted: #60808f; --line: #dbe8ef;
+    --blue: #1f7ea8; --blue-dark: #14587a; --soft: #e5f2f8;
+    --good: #12a176; --good-soft: #e0f6ee; --bad: #e0455a; --bad-soft: #fdeaed;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+  .hero { background: linear-gradient(135deg, var(--blue-dark), var(--blue)); color: #fff; padding: 34px 16px 70px; }
+  .hero .in { max-width: 1040px; margin: 0 auto; }
+  .badge { display: inline-block; background: rgba(255,255,255,.18); border-radius: 99px; padding: 4px 12px;
+           font-size: .78rem; letter-spacing: .04em; margin-bottom: 10px; }
+  .hero h1 { margin: 0 0 6px; font-size: 2rem; }
+  .hero p { margin: 0; max-width: 640px; opacity: .92; }
+  .wrap { max-width: 1040px; margin: -44px auto 0; padding: 0 16px 56px; }
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 18px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+          box-shadow: 0 6px 24px rgba(20, 88, 122, .07); }
+  .card h2 { margin: 0 0 12px; font-size: 1.05rem; }
+  .samples { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip { border: 1px solid var(--line); background: var(--soft); color: var(--blue-dark); border-radius: 99px;
+          padding: 8px 14px; font-size: .85rem; font-weight: 600; cursor: pointer; }
+  .chip:hover { background: #d3e9f3; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+  label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 3px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px;
+                  font-size: .95rem; background: #fbfdfe; color: var(--ink); }
+  input:focus, select:focus { outline: 2px solid var(--blue); border-color: transparent; background: #fff; }
+  .side { position: sticky; top: 16px; text-align: center; }
+  .side h2 { color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  .predict { width: 100%; border: 0; border-radius: 12px; padding: 13px; font-size: 1rem; font-weight: 700; color: #fff;
+             background: linear-gradient(135deg, var(--blue-dark), var(--blue)); cursor: pointer; margin: 10px 0 16px; }
+  .predict:hover { filter: brightness(1.07); }
+  .predict:disabled { opacity: .6; cursor: wait; }
+  .empty { color: var(--muted); font-size: .9rem; padding: 18px 6px 8px; }
+  #out { display: none; }
+  .ring { position: relative; width: 190px; height: 190px; margin: 4px auto 8px; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .track { stroke: var(--line); }
+  .ring .val { transition: stroke-dashoffset .8s ease, stroke .3s; stroke-linecap: round; }
+  .ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring .pct { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .ring .cap { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+  .verdict { display: inline-block; font-size: 1.5rem; font-weight: 800; border-radius: 12px; padding: 6px 22px; margin: 4px 0 6px; }
+  .verdict.good { background: var(--good-soft); color: var(--good); }
+  .verdict.bad { background: var(--bad-soft); color: var(--bad); }
+  .small { font-size: .8rem; color: var(--muted); }
+  .err { color: var(--bad); font-size: .88rem; margin-top: 8px; display: none; }
+  .pulse { animation: pop .45s ease; }
+  @keyframes pop { 0% { transform: scale(.94); opacity: .4; } 100% { transform: scale(1); opacity: 1; } }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: right; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; }
+  tr.best td { background: var(--soft); font-weight: 700; color: var(--blue-dark); }
+  .tag { font-size: .7rem; background: var(--blue); color: #fff; border-radius: 99px; padding: 2px 8px; margin-left: 6px; }
+  .scroll { overflow-x: auto; }
+  .foot { font-size: .8rem; color: var(--muted); margin-top: 22px; text-align: center; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+    .side { position: static; order: -1; }
+    .hero h1 { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="hero"><div class="in">
+  <span class="badge">MACHINE LEARNING PROJECT</span>
+  <h1>Heart Disease Predictor</h1>
+  <p>Enter a patient's 11 measurements and the model estimates the risk of heart disease.
+  Five models were trained and compared; the best one powers this page.</p>
+</div></div>
+
+<div class="wrap">
+  <form id="form" class="layout" autocomplete="off">
+    <div class="card">
+      <div class="samples">
+        <button type="button" class="chip" id="sHigh">Example: higher-risk patient</button>
+        <button type="button" class="chip" id="sLow">Example: lower-risk patient</button>
+      </div>
+      <div class="grid">
+        {% for f in fields %}
+          <div>
+            <label for="{{ f.name }}">{{ f.label }}</label>
+            {% if f.kind == 'number' %}
+              <input type="number" id="{{ f.name }}" name="{{ f.name }}" step="{{ f.step }}"
+                     min="{{ f.min }}" max="{{ f.max }}" value="{{ f.default }}">
+            {% else %}
+              <select id="{{ f.name }}" name="{{ f.name }}">
+                {% for val, text in f.options %}
+                  <option value="{{ val }}" {{ 'selected' if val == f.default }}>{{ text }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card side" id="side">
+      <h2>Result</h2>
+      <button type="submit" class="predict" id="go">Predict</button>
+      <div class="empty" id="empty">Fill in the measurements or load an example, then press <b>Predict</b>.</div>
+      <div id="out">
+        <div class="ring">
+          <svg width="190" height="190" viewBox="0 0 190 190">
+            <circle class="track" cx="95" cy="95" r="80" fill="none" stroke-width="14"/>
+            <circle class="val" id="arc" cx="95" cy="95" r="80" fill="none" stroke-width="14"
+                    stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
+          </svg>
+          <div class="mid"><div class="pct" id="pct"></div><div class="cap">chance of heart disease</div></div>
+        </div>
+        <div class="verdict" id="verdict"></div>
+        <div class="small">Predicted by {{ metrics.best_model }}</div>
+      </div>
+      <div class="err" id="err"></div>
+    </div>
+  </form>
+
+  <div class="card" style="margin-top:18px">
+    <h2>How the 5 models compared</h2>
+    <div class="scroll">
+      <table>
+        <tr><th>Model</th><th>CV accuracy</th><th>Test accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC AUC</th></tr>
+        {% for name, m in ranked %}
+          <tr class="{{ 'best' if name == metrics.best_model }}">
+            <td>{{ name }}{% if name == metrics.best_model %}<span class="tag">BEST</span>{% endif %}</td>
+            <td>{{ '%.1f' % (m.cv_accuracy * 100) }}%</td>
+            <td>{{ '%.1f' % (m.accuracy * 100) }}%</td>
+            <td>{{ '%.1f' % (m.precision * 100) }}%</td>
+            <td>{{ '%.1f' % (m.recall * 100) }}%</td>
+            <td>{{ '%.1f' % (m.f1 * 100) }}%</td>
+            <td>{{ '%.3f' % m.roc_auc }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <p class="small" style="margin:10px 0 0">Trained on {{ metrics.n_train }} patients, tested on {{ metrics.n_test }} unseen patients.
+    The best model was picked by cross-validation (CV) accuracy.</p>
+  </div>
+
+  <p class="foot">For learning only. This is not a medical device and must not be used for diagnosis.
+  Please consult a qualified doctor for any health concern.</p>
+</div>
+
+<script>
+const samples = {{ samples | tojson }};
+const form = document.getElementById('form');
+const CIRC = 2 * Math.PI * 80;
+
+function fill(obj) { for (const [k, v] of Object.entries(obj)) document.getElementById(k).value = v; }
+document.getElementById('sHigh').onclick = () => fill(samples.high);
+document.getElementById('sLow').onclick = () => fill(samples.low);
+document.querySelectorAll('input[type=number]').forEach(i => i.addEventListener('wheel', () => i.blur(), {passive: true}));
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('go'), err = document.getElementById('err');
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Predicting...';
+  const body = {};
+  new FormData(form).forEach((v, k) => body[k] = v);
+  try {
+    const res = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error || 'Something went wrong.');
+    const high = out.label === 'High risk';
+    const color = high ? 'var(--bad)' : 'var(--good)';
+    document.getElementById('empty').style.display = 'none';
+    const box = document.getElementById('out');
+    box.style.display = 'block';
+    box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
+    const arc = document.getElementById('arc');
+    arc.style.stroke = color; arc.style.strokeDasharray = CIRC;
+    arc.style.strokeDashoffset = CIRC * (1 - out.p_disease);
+    const pct = document.getElementById('pct');
+    pct.textContent = (out.p_disease * 100).toFixed(1) + '%'; pct.style.color = color;
+    const v = document.getElementById('verdict');
+    v.textContent = out.label; v.className = 'verdict ' + (high ? 'bad' : 'good');
+    if (window.innerWidth <= 820) document.getElementById('side').scrollIntoView({behavior: 'smooth', block: 'start'});
+  } catch (ex) {
+    err.textContent = ex.message; err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Predict';
+  }
+});
+</script>
+</body>
+</html>
